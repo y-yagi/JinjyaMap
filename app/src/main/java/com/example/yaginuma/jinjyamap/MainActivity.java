@@ -20,7 +20,9 @@ import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.json.JSONArray;
@@ -37,8 +39,10 @@ public class MainActivity extends FragmentActivity
     public LocationManager mLocationManager;
     private double mLat = 35.681382; // set default to Tokyo
     private double mLng = 139.766084;
-
+    private boolean mDisplayedMarker = false;
+    private Marker mCurrentPosMarker = null;
     private String mGooglePlaceAPIKey;
+
     private static final int ZOOM = 15;
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final String URL_BASE =
@@ -80,18 +84,31 @@ public class MainActivity extends FragmentActivity
         mMap.addMarker(new MarkerOptions().position(new LatLng(lat, lng)).title(title));
     }
 
+    private void setCurrentPosMarkerToMap(Double lat, Double lng) {
+        if (mCurrentPosMarker != null) {
+            mCurrentPosMarker.remove();
+        }
+
+        mCurrentPosMarker = mMap.addMarker(new MarkerOptions()
+                                .position(new LatLng(lat, lng))
+                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.current)));
+    }
+
     private void setLocationProvider() {
         mLocationManager =(LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 100, 10, this);  // 100秒/10間隔
     }
 
     @Override
     public void onLocationChanged(Location location) {
         mLat = location.getLatitude();
-        mLng =  location.getLongitude();
-        Toast.makeText(this, "pos : " + mLat + " - " + mLng , Toast.LENGTH_SHORT).show();
-        moveCamera();
-        fetchPlaces();
+        mLng = location.getLongitude();
+        if (!mDisplayedMarker) {
+            fetchPlaces();
+            moveCamera();
+            mDisplayedMarker = true;
+        }
+        setCurrentPosMarkerToMap(mLat, mLng);
     }
 
     @Override
@@ -141,8 +158,6 @@ public class MainActivity extends FragmentActivity
             Log.e(TAG, "Data parse error");
             e.printStackTrace();
         }
-        // set only once
-        mLocationManager.removeUpdates(this);
     }
 
     @Override
