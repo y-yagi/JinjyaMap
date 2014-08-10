@@ -1,6 +1,11 @@
 <resources>
-        <string name="google_maps_key_instructions" templateMergeStrategy="replace"><!--
+  <!-- change name to "google_maps_key_instructions" -->
+  <string name="google_maps_key_instructions_sample" templateMergeStrategy="replace"><!--
     --></string>
-    <string name="google_maps_key" templateMergeStrategy="preserve">SET UP YOUR KEY</string>
-    <string name="google_place_api_key">SET UP YOUR KEY</string>
+
+  <!-- change name to "google_maps_key" -->
+  <string name="google_maps_key_sample" templateMergeStrategy="preserve">SET UP YOUR KEY</string>
+
+  <!-- change name to "google_place_api_key" -->
+  <string name="google_place_api_key_sample">SET UP YOUR KEY</string>
 </resources>
