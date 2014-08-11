@@ -37,11 +37,10 @@ public class MainActivity extends FragmentActivity
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
     public LocationManager mLocationManager;
-    private double mLat = 35.681382; // set default to Tokyo
-    private double mLng = 139.766084;
     private boolean mDisplayedMarker = false;
     private Marker mCurrentPosMarker = null;
     private String mGooglePlaceAPIKey;
+    private Position mCurrentPosition;
 
     private static final int ZOOM = 15;
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -53,8 +52,10 @@ public class MainActivity extends FragmentActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mGooglePlaceAPIKey = getString(R.string.google_place_api_key);
+        mCurrentPosition = new Position(this);
         setLocationProvider();
         setUpMapIfNeeded();
+        setCurrentPosMarkerToMap(mCurrentPosition.getLat(), mCurrentPosition.getLng());
     }
 
     @Override
@@ -65,8 +66,9 @@ public class MainActivity extends FragmentActivity
 
     @Override
     protected void onStop() {
-        super.onStop();
         mLocationManager.removeUpdates(this);
+        mCurrentPosition.apply();
+        super.onStop();
     }
 
 
@@ -101,14 +103,15 @@ public class MainActivity extends FragmentActivity
 
     @Override
     public void onLocationChanged(Location location) {
-        mLat = location.getLatitude();
-        mLng = location.getLongitude();
+        mCurrentPosition.setLat(location.getLatitude());
+        mCurrentPosition.setLng(location.getLongitude());
+
         if (!mDisplayedMarker) {
             fetchPlaces();
             moveCamera();
             mDisplayedMarker = true;
         }
-        setCurrentPosMarkerToMap(mLat, mLng);
+        setCurrentPosMarkerToMap(mCurrentPosition.getLat(), mCurrentPosition.getLng());
     }
 
     @Override
@@ -124,14 +127,15 @@ public class MainActivity extends FragmentActivity
     }
 
     private void moveCamera() {
-        CameraUpdate cu = CameraUpdateFactory.newLatLngZoom(new LatLng(mLat, mLng), ZOOM);
+        CameraUpdate cu = CameraUpdateFactory.newLatLngZoom(
+                new LatLng(mCurrentPosition.getLat(), mCurrentPosition.getLng()), ZOOM);
         mMap.moveCamera(cu);
     }
 
     private void fetchPlaces() {
         RequestQueue mQueue;
         mQueue = Volley.newRequestQueue(this);
-        String location = "&location=" + mLat + "," + mLng;
+        String location = "&location=" + mCurrentPosition.getLat() + "," + mCurrentPosition.getLng();
         String url = URL_BASE + location + "&query=" + encode("神社") + "&key=" + mGooglePlaceAPIKey;
         mQueue.add(new JsonObjectRequest(Request.Method.GET, url,
                 null, this, this
@@ -147,6 +151,8 @@ public class MainActivity extends FragmentActivity
                 Toast.makeText(this, "近くに検索対象はありませんでした", Toast.LENGTH_LONG).show();
                 return;
             }
+
+            Toast.makeText(this, "読み込みが完了しました", Toast.LENGTH_LONG).show();
             for (int i = 0; i < result_count; i++) {
                 String name = results.getJSONObject(i).getString("name");
                 Double lat = results.getJSONObject(i).getJSONObject("geometry").getJSONObject("location").getDouble("lat");
