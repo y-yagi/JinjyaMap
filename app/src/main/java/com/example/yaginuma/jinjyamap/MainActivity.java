@@ -98,7 +98,7 @@ public class MainActivity extends FragmentActivity
 
     private void setLocationProvider() {
         mLocationManager =(LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 100, 10, this);  // 100秒/10間隔
+        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10, 10, this);  // 10秒/10m間隔
     }
 
     @Override
