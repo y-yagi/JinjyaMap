@@ -1,13 +1,19 @@
 package com.example.yaginuma.jinjyamap;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.annotation.TargetApi;
+import android.app.Fragment;
 import android.content.Context;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.Build;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 
 import android.location.LocationListener;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -41,6 +47,8 @@ public class MainActivity extends FragmentActivity
     private Marker mCurrentPosMarker = null;
     private String mGooglePlaceAPIKey;
     private Position mCurrentPosition;
+    private View mProgressView;
+    private View mMapFragment;
 
     private static final int ZOOM = 15;
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -53,6 +61,10 @@ public class MainActivity extends FragmentActivity
         setContentView(R.layout.activity_main);
         mGooglePlaceAPIKey = getString(R.string.google_place_api_key);
         mCurrentPosition = new Position(this);
+        mProgressView = findViewById(R.id.progress);
+        mMapFragment = findViewById(R.id.map) ;
+
+        showProgress(true);
         setLocationProvider();
         setUpMapIfNeeded();
         setCurrentPosMarkerToMap(mCurrentPosition.getLat(), mCurrentPosition.getLng());
@@ -105,6 +117,7 @@ public class MainActivity extends FragmentActivity
     public void onLocationChanged(Location location) {
         mCurrentPosition.setLat(location.getLatitude());
         mCurrentPosition.setLng(location.getLongitude());
+        showProgress(false);
 
         if (!mDisplayedMarker) {
             fetchPlaces();
@@ -181,4 +194,31 @@ public class MainActivity extends FragmentActivity
         }
         return  result;
     }
+
+    /**
+     * Shows the progress UI
+     */
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
+    public void showProgress(final boolean show) {
+        int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
+
+        mMapFragment.setVisibility(show ? View.GONE : View.VISIBLE);
+        mMapFragment.animate().setDuration(shortAnimTime).alpha(
+                show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mMapFragment.setVisibility(show ? View.GONE : View.VISIBLE);
+            }
+        });
+
+        mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+        mProgressView.animate().setDuration(shortAnimTime).alpha(
+                show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+            }
+        });
+    }
 }
+
