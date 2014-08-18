@@ -5,9 +5,12 @@ import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.Intent;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
+import android.provider.ContactsContract;
+import android.provider.Settings;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 
@@ -109,7 +112,14 @@ public class MainActivity extends FragmentActivity
     }
 
     private void setLocationProvider() {
-        mLocationManager =(LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        mLocationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        Boolean mLocationEnabled = mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        if (!mLocationEnabled) {
+            Toast.makeText(this, "Location機能がOFFになっています。Location機能をONにして下さい。", Toast.LENGTH_LONG).show();
+            Intent settingIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+            startActivity(settingIntent);
+            return;
+        }
         mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10, 10, this);  // 10秒/10m間隔
     }
 
