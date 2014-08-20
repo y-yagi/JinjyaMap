@@ -48,21 +48,17 @@ public class MainActivity extends FragmentActivity
     public LocationManager mLocationManager;
     private boolean mDisplayedMarker = false;
     private Marker mCurrentPosMarker = null;
-    private String mGooglePlaceAPIKey;
     private Position mCurrentPosition;
     private View mProgressView;
     private View mMapFragment;
 
     private static final int ZOOM = 15;
     private static final String TAG = MainActivity.class.getSimpleName();
-    private static final String URL_BASE =
-        "https://maps.googleapis.com/maps/api/place/textsearch/json?radius=500&sensor=false&language=ja";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mGooglePlaceAPIKey = getString(R.string.google_place_api_key);
         mCurrentPosition = new Position(this);
         mProgressView = findViewById(R.id.progress);
         mMapFragment = findViewById(R.id.map) ;
@@ -158,8 +154,8 @@ public class MainActivity extends FragmentActivity
     private void fetchPlaces() {
         RequestQueue mQueue;
         mQueue = Volley.newRequestQueue(this);
-        String location = "&location=" + mCurrentPosition.getLat() + "," + mCurrentPosition.getLng();
-        String url = URL_BASE + location + "&query=" + encode("神社") + "&key=" + mGooglePlaceAPIKey;
+        GoogleMapApiClient googleMapiApiClient = new GoogleMapApiClient(this, mCurrentPosition);
+        String url = googleMapiApiClient.getRequestUrl();
         mQueue.add(new JsonObjectRequest(Request.Method.GET, url,
                 null, this, this
         ));
@@ -193,16 +189,6 @@ public class MainActivity extends FragmentActivity
     public void onErrorResponse(VolleyError error) {
         Log.e(TAG, "Data load error");
         error.printStackTrace();
-    }
-
-    private String encode(String str) {
-        String result = "";
-        try {
-            result = URLEncoder.encode(str, "UTF-8");
-        } catch(UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        return  result;
     }
 
     /**
