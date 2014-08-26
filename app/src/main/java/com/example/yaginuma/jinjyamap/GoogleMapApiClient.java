@@ -11,7 +11,7 @@ public class GoogleMapApiClient {
     private String mGooglePlaceAPIKey;
 
     private static final String URL_BASE =
-            "https://maps.googleapis.com/maps/api/place/textsearch/json?radius=500&sensor=false&language=ja";
+            "https://maps.googleapis.com/maps/api/place/textsearch/json?radius=500&sensor=true&language=ja";
 
     public GoogleMapApiClient(Context context, Position position) {
         this.mContext = context;
